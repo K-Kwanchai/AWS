@@ -1,0 +1,24 @@
+set nocount on;
+declare @cmd varchar(max)
+declare @count int
+create table #wheel_name
+(
+	name varchar(50)
+)
+declare @tablewheel varchar(50)
+declare @delwheel varchar(50) = '_2_del_adj'
+
+insert into #wheel_name (name) select name from sysobjects where name like 'wheelmk2_%' order by name 
+set @count = (select COUNT(*) from #wheel_name)
+while @count>0
+begin
+	set @tablewheel = (select top 1 name from #wheel_name)
+	set @cmd = 'update ' + @tablewheel + ' set section_id = ' + @delwheel + '.section_id,
+		status_cur = ' + @delwheel + '.status_cur, 
+		tracking = ' + @delwheel + '.tracking
+		from ' + @tablewheel + ' join ' + @delwheel + ' del on ' + @tablewheel + '.serial_no = del.serial_no' 
+	print @cmd
+	--exec(@cmd) 
+	delete from #wheel_name where name = @tablewheel
+	set @count-=1
+end
